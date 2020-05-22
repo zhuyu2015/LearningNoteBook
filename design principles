@@ -1,0 +1,467 @@
+1.依赖倒置原则：
+高层模块(稳定)不应该依赖底层模块(变化)，二者都应该依赖抽象；抽象不应该依赖于抽象
+MainForm-->line&rect(错的)   MainForm-->shape<--line&rect：两个都依赖与抽象的shape，隔离的变化
+2.开放封闭原则：
+类模块应该可扩展，但不可更改
+3.单一职责原则：
+一个类应该仅有一个引起它变化的原因，变化的方向隐含着类的责任
+4.liskov替换原则：
+也就是子类必须实现完了父类的功能，就是子类应该把父类的功能用完
+5.接口隔离原则：
+不应该强迫客户程序依赖它们不用的方法，也就是接口应该小而完备，没有特殊性，接口封装完好
+把只有设计者关注的东西搞成private(只有自己用)或protected(子类也可以用)就可以了
+6.优先使用对象组合，而不是继承：
+因为继承使得子父类耦合度过高，某种程度上破坏了封装性
+7.封装变化点原则：
+找准变化点，而不是一整个类，封装变化点就行，就是经常变的东西给搞成多态的
+8.针对接口编程，而不是针对实现编程：
+不将变量类型声明为某个特定的具体类，而是声明为某个接口
+客户无需获知对象的具体类型，只需要知道对象所具有的接口即可
+减少系统中各个部分的依赖关系，实现“高内聚、松耦合”的设计方案
+
+设计习语：底层模式、设计习惯用法，比如effective c++
+设计模式：类和相互影响的对象之间的关系，主要解决类模块复用问题
+架构模式：系统级别的设计，子系统划分，职责等
+
+寻找变化点，在变化点应用设计模式？稳定和变化的力量；虚基类的稳定是不应该变化的
+
+1.template method：晚绑定，稳定的写好，会变化的写成virtual function且是protected；你不要调用我，我来调用你
+2.strategy模式：具体使用实例和基类不变，基于基类的扩展是变化的；很多有if，else时是可以用strategy模式的，而且if，else会加载很多无用代码
+3.观察者模式：多继承中，只继承一个父类，其他都是接口比较推崇，其他多继承都有避免；一对多的依赖关系，“一”是不变的，“多”指观察者想看就自己去加
+4.工厂模式：解决多态的virtual接口怎么创建具体子类的问题，秒啊，就是多态套多态，把new各种具体类也搞成多态
+就是尽量依赖虚基类，依赖抽象；其实虚基类就是延迟变化，把编译时变化变成运行时变化；factory method要求对象参数相同
+5.抽象工厂模式：其实是family factory，就是把相关联的factory放在同一个虚基类里；
+6.装饰模式：把不断重复的子操作抽象出来，和中间继承类分离；往往是解决多继承的时候，把不断重复的子类给抽出来
+base-->child1,child2-->2ndchild1,2ndchild2,2ndchild3...
+child级别都有后面的2ndchild，这时2ndchild就需要直接继承base，然后根据下面的多态，在运行时组合出上面的功能
+child1* s1 = new child1();
+2ndchild2* new 2ndchild2(s1);	//完美的组合出了一个带2ndchild功能的child类，牛逼
+
+
+总结：
+管理变化，提高复用性；先分解，再抽象
+静态-->动态；早绑定-->晚绑定...
+继承和组合在内存上没区别
+所有的模式都归到多组合，少继承，而且多是指针(往往是多态指针 )的组合
+
+CMAKE_INSTALL_PREFIX 	构建install的路径
+$ENV{HOME} 				HOME环境下的目录路径
+PROJECT_NAME 			工程项目名变量
+<PKG>_INCLUDE_DIR 		导入包头文件全路径
+<PKG>_LIBRARIES 		导入库文件的全路径
+PROJECT_SOURCE_DIR 		构建工程的全路径
+CMAKE_VERSION 			cmake的版本号
+CMAKE_SOURCE_DIR 		源码树的顶层路径
+
+find_package的使用方法
+变量名				常用指令						操作含义
+<NAME>_FOUND		if(<NAME>_FOUND)			找到库的标志
+<NAME>_INCLUDE_DIR	find_path(<NAME>_INCLUDE)	库的头文件路径
+<NAME>_INCLUDES
+<NAME>_LIBRARY		find_library(<NAME>_LIBS)	库文件路径
+<NAME>_LIBS
+
+程序规范：
+程序列数一般不超过80列
+看一下doxygen的文档语法来写注释，会自动生成文档：
+1.@后面的词会被自动生成文档
+2./**< xxxxxxxxxx */会放在改行后面，没有"<"就会生成在文字后面
+3.单行注释：/// or //!
+4.多行注释：
+/**
+ *
+ *
+ */
+5.///< 也是代码后注释
+6.
+/**
+ * @brief:	函数简介
+ * @param:	形参
+ * @return:	返回说明
+ * 	@retval:	返回值说明
+ *	@retval:	返回值说明
+ * @note:	注解
+ * @atterntion:	注意
+ * @warning:	警告
+ * @exception:	异常
+ */
+7.还有很多其他参数说明：
+@see: 		参考 
+@class: 	引用类，用于文档生成连接
+@var:		引用变量，用于文档生成连接
+@enum:		引用枚举，用于文档生成连接
+@code:		代码块开始，与@endcode成对使用
+@bug:		缺陷，会链接到所有缺陷汇总的缺陷列表
+@todo:		TODO，链接到所有TODO汇总的TODO列表
+@example:	使用例子说明
+@remarks:	备注说明
+@pre:		函数前置条件
+@deprecated:函数过时说明
+
+1.code is optimized for the reader, not the writer
+2.rules should pull their weight, that means dumb stuff should be handled at a higher level
+3.value the standard, but don't idolize, means totally belif on it
+4.be consistent
+5.is something unusual is happening, leave explicit evidence for the reader
+6.avoid tricky and hard-to-maintain constructs:write simple code
+7.avoid polluting the global namespace
+8.concede to optimization and practicalities when necessary
+
+STL解析：六大部件，容器、分配器、算法、迭代器、适配器、仿函数，容器和算法最重要
+
+1.容器“前闭后开”区间：c.begin()指向第一个数据，c.end()指向最后一个数据的后一个。
+每个容器都有iterator(泛化的指针)：
+Container<T> c;	Container<T>::iterator iter = c.begin()
+for(auto elem : vec)，新的遍历方式
+分类：
+sequence containers:	array(fixed number of elements), vector, deque(双向quene), list(双向链表), forward-list(单向链表)
+assoicative containers:	set/multiset, map/multimap(这两个都是红黑树实现的，带了multi就是可以重复的)
+unordered containers:	unordered set, unordered map(c++11，哈希表实现的，哈希表其实相当于一个vector每个元素是个链表)
+1.1 array, 跟数组差不多，array<int, elem_size> c;
+1.2 vector:
+	vector的空间是2倍2倍的增长；空间是连续的
+	加“::”表示全局函数，例如::find(c.begin(), c.end(), targetnumber);
+************链表相关的iterator是不能跳跃的访问的，只能一个一个访问*************
+1.3 list，不连续的链表：当容器自己提供sort等算法的时候，用容器自己的比较好，list不能用全局sort，因为list数据结构不满足全局sort
+1.4 forward_list，相关.back()的操作一般都没有
+1.5 deque：
+	双向可进可出，分段连续，但让使用者感觉是连续的
+	push_back/push_front，前后都分配一个小buffer(512 bytes)
+1.6 stack(先进后出)
+1.7 quene(先进先出)，这两种容器都是用deque实现的，技术上应该叫容器适配器
+1.8 multiset，multiset<string> c; c.insert(string(buf));重复的还是会insert进去
+1.9 multimap，multimap<int, string> c; c.insert(pair<int, string>(i, str));
+1.10 unordered_multiset
+	 unordered_multiset<string> c; 
+	 c.bucket_count()，bucket数目比元素个数还要多，一旦比元素number多，就把bucket数目搞多，近2倍的增多
+1.11 unordered_multimap，一样的允许重复的key
+1.12 set，map，放进去的东西是不会重复的，是unique的；
+		map<int, string> c1; multimap<int, string> c2; c1[i] = "str"，但c2是不能这么操作的
+1.13 unordered_map, unordered_set
+带unordered的都是用hash实现的
+
+2.allocator，一般搭配容器使用，自己单独不使用
+
+object-oriented programming(OOP) vs generic programming(GP)
+OOP: 数据和方法放在一起
+GP:	 数据和方法分开
+1.所有的algorithm本质都是在比大小
+2.操作符重载
+	不能被重载的有: ::, ., .*, ?:
+3.模板: class模板，function模板，成员模板
+	泛化:就是一般写的模板
+	特化:	template<class type>
+			struct __type_traits{...};
+	----->	template<>
+			struct __type_traits<int>{...};
+	局部特化:
+	case1:	(数量上的偏移)
+			template<class T, class Alloc = alloc>
+			class vector{...};
+	----->  template<class Alloc>
+			class vector<bool, Alloc>{...};
+	case2:	(范围上的偏移)
+			template<class Iterator>
+			struct iterator_traits{...};
+	----->	template<class T>
+			struct iterator_traits<T*>{...};
+
+3.迭代器
+分类:
+random_access_iterator(array, vector, deque)
+bidirectional_iterator(list, set, map, multiset, multimap)
+forward_iterator(unordered_set/map/multiset/multimap)
+input_iterator:  istream	istream_iterator
+output_iterator: ostream	ostream_iterator
+可以用#include <typeinfo>中的typeid(itr).name()来获得类型
+对算法的影响：一般都是先判断类型，再进行具体操作
+input_iter<--farward_iter<--bidirectional_iter<--random_access_iter：input_iter类型最base
+
+4.c++标准库算法的11个例子
+一般形式: 	template<typename Iterator>
+			std::Algorithm(Iterator itr1, Iterator itr2, ...)
+			后面的"..."可以是Operation: function, 仿函数
+***range-based for statement
+***for (int i : {2,2,3,5,6,6,6,1,2,3}){cout<< i <<endl;}
+replace_if/count_if/find_if: 可以传入一个predict，操作的自定义条件
+有自有count函数的容器: (unordered)(multi)set/map(8个关联性容器)
+有自有find函数的容器:  set/map related(关联性容器)
+有自有sort函数的容器:  list, forward_list(值得注意的是关联性容器根本没有sort操作)
+std::vector vec; vec.rbegin(), vec.rend(); 反向运行算法; 区间[)-->(]
+reverse_iterator						reverse_iterator
+rbegin(){								rend(){
+	return reverse_iterator(end());			return reverse_iterator(begin());
+}										}
+binary_search(ForwardIterator first, 
+			  ForwardIterator end,
+			  cont T& val){first = std::lower_bound(first, last, val); return (first!=last && (val<*first));}
+lower_bound: 找到该val在容器中的下界
+在一个容器中找有没有val这个数，调用前一定要先运行sort
+
+5.functors: 仿函数，有:Arithmetic, Logical, Related三大类
+template<class T>
+struct less : public binary_function<T, T, bool>{
+	bool operator()(const T& x, const T& y)const
+		{return x < y;}
+};
+使用时: sort(vec.begin(), vec.end(), less<int>()); //加一个()，是为了产生临时对象，就是默认构造函数嘛
+STL规定每个Adaptable Function都应挑选一个(unary/binary)适当的及逆行继承:
+template <class Arg, class Result>			template <class Arg1, Class Arg2, class Result>
+struct unary_function {						struct binary_function {
+	typedef Arg argument_type;					typedef Arg1 first_argument_type;
+	typedef Result result_type;					typedef Arg2 second_argument_type;
+}												typedef Result result_type;
+											}
+因为这些functor需要被stl适配，就一定去继承unary_function, binary_function，因为adaptor会检查一些问题
+*******************************“可适配的”*******************************
+
+6.Adapters: (迭代器/容器/仿函数)适配器，本质就是把要改造修饰的操作先记下来
+函数适配器: 
+bind2nd: Operation::second_argument_type这些都是用来检测数据类型的，会检测类型，则说明这个函数是
+*******************************“可适配的”*******************************
+cout << count_if(vi.begin(), vi.end(), bind2nd(less<int>(), 40)) << endl;
+
+not1: 操作的反--》count_if(vi.begin(), vi.end(), not1(bind2nd(less<int>(), 40)))
+
+bind: 可以绑定functions, function objects
+member functions(有一个参数，没有指定时一定用_1占位)，data members(有一个参数，没有指定时一定用_1占位)
+using namespace std::placeholders;	//adds visibility of _1, _2, _3...占位符
+double my_divide(double x, double y){return x / y;}
+struct Mypair{
+	double a, b;
+	double multiply() {return a * b;}
+}
+auto fn_five = bind(my_divide, 10, 2);		//其实绑定不是啥，就是记住一些操作和参数而已
+cout << fn_five() << std::endl;
+auto fn_invert = bind(my_divide, _2, _1);	//绑定几个，和最终使用的函数有关，也就是my_divide
+											//_2是第二实参，_1是第一实参，不论bind是什么顺序
+cout << fn_invert(10, 2) << "\n";			//output: 0.2
+Mypair ten_two {10,2};
+auto bound_memfn = bind(&Mypair::multiply, _1);	//member function其实有个看不见的实参:this, _1是占位this的
+或者 auto bound_memfn1 = bind(%Mypair::multiply, ten_two)	//直接绑定一个类实体
+cout << bound_memfn(ten_two) << "\n";			//ten_two的this pointer传给bound_memfn
+auto bound_memdata = bind(&Mypair::a, ten_two);	//output:10
+cout << bound_memdata() << "\n";
+
+std::promise&&std::future 					//等thread完成，得到结果
+void findodd(){...}
+std::promise<int> outvalue;
+std::future<int> valueFuture = outvalue.get_future();
+std::thread t1(findodd, std::move(outvalue));
+cout<< "findood output: "<<valueFuture.get() << std::endl;
+
+std::bind & std::future & std::function & std::unique_ptr & std::async()
+class classA{
+	...
+	std::future<_futureget_datatype> getStructFuture(){
+		return std::async([=](){...});
+	}
+}
+std::uniique_ptr<classA> objA;	//只有objA有权利删除指向的空间
+std::function<void.../*函数返回类型*/(int, char.../*形参*/)> func_obj;
+std::function<std::future<_futureget_datatype>()> func_wrapper;
+func_wrapper = std::bind(&classA::getStructFuture, objA.get());
+...
+_futureget_datatype datageted = func_wrapper().get();
+
+
+inserter: list等不连续空间插入一段值
+list<int> foo, bar;
+for(int i=1; i<=5; i++){foo.push_back(i); bar.push_back(i*10);}
+list<int>::iterator itr = foo.begin();
+advance(it, 3);										//list不是连续空间，不能直接++，而需要使用advance前进3格
+copy(bar.begin(), bar.end(), inserter(foo, itr));	
+//inserter着实牛逼，copy操作已经写好了，结果重载了"="，把本来是赋值的操作，改成了list的insert操作
+insert_iterator<Container>& 
+operator=(const typename Container::value_type& value){
+	iter = container->insert(iter, value);			//牛皮，把"="重载成了container自己的insert操作
+	++iter;
+	return *this;
+}
+
+ostream_iterator:
+std::ostream_iterator<int> out_it(std::cout, ", ");
+std::copy(vec.begin(), vec.end(), out_it);			//此操作会输出内容到console上
+//这里更牛逼，把copy里的:*, ++, 都重载了，重载成啥都不做，"="也重载了
+ostream_iterator<T,charT,traits>& operator*(){return *this; }
+ostream_iterator<T,charT,traits>& operator++(){return *this; }
+ostream_iterator<T,charT,traits>& operator=(const T& value){
+	*out_stream << value;
+	if(delim!=0) *out_stream<<delim;
+	return *this;
+}													//着实牛皮
+
+istream_iterator:创建的一瞬间之后就已经一直在等待输入
+istream_iterator(istream_type& s):in_stream(&s){++*this; }
+istream_iterator<T,charT,traits,Distance>& operator++(){
+	if(in_stream && !(*in_stream >> value)) in_stream=0;
+	return *this;
+}
+
+1.一个万能的hash function: variadic templates
+template <typename T, typename... Types>
+inline void hash_val(size_t& seed,
+					const T& val, const Types&... args){
+	hash_combine(seed, val);
+	hash_val(seed, args...);						//递归调用
+}
+三种形式:
+#include <functional>
+class Customer{...};
+形式一:
+class CustomerHash{
+	public:
+	std::size_t operator()(const Customer& c)const{return ...}
+};
+unordered_set<Customer, CustomerHash> custset;
+形式二:
+size_t customer_hash_func(const Customer& c){return ...};
+unordered_set<Customer, size_t(*)(const Customer&)> custset(20, customer_hash_func);
+形式三:
+利用基本类型的hash函数，写个特化的hash function
+namespace std{											//必须放在std命名空间内
+	template<>
+	struct hash<Mystring>{								//为了unordered containers
+		size_t operator()(const MyString& s)const noexcept
+		{return hash<string>()(string(s.get()));}		//借用了hash<string>
+	}
+}
+
+2.tuple的使用
+tuple<int,float,string>t1(41,6.3,"nihao");
+cout <<get<0>(t1) <<get<1>(t1) <<get<2>(t1) <<endl;		//取数操作
+int i1; float f1; string s1;
+tie(i1,f2,s1) = t1;										//给单独的每个类型赋值
+template<typename Head, typename... Tail>
+class tuple<Head, Tail...> : private tuple<Tail...>
+{
+	typedef tuple<Tail...> inherited;
+public:
+	tuple(){}
+	tuple(Head v, Tail... vtail)
+	:m_head(v), inherited(vtail...){}
+
+	typename Head::type head(){return m_head; }
+	inherited& tail() {return *this; }
+
+protected:
+	Head m_head;
+}
+
+3.copy && assignment construtor: 类里面有指针，就一定要自己写这两个操作
+string(const string& str);				//copy constructor
+string& operator=(const string& str);	//assignment constructor
+common constructor:
+inline string::string(const char* cstr = 0){
+	if(cstr){
+		m_data = new char[strlen(cstr) + 1];
+		strcpy(m_data, cstr);
+	}
+	else{
+		m_data = new char[1];
+		*m_data = '\0';
+	}
+}										
+inline string::~string(){delete[] m_data;}
+copy constructor:深copy，默认的copy construtor是浅copy，同一块内存被多个指针指着
+inline string::string(const string& str){
+	m_data = new char[strlen(str.m_data) + 1];
+	strcpy(m_data, str.m_data);
+}
+string s1("hello");		//common constructor
+string s2(s1);			//copy constructor
+string s3 = s1;			//assignment constructor
+inline string& string::operator=(const string& str){
+	if(this == &str)			//检测自我赋值
+		return *this;			//因为下面的delete操作，就把自己杀掉了，很危险的
+
+	delete[] m_data;
+	m_data = new char[strlen(str.m_data) + 1];
+	strcpy(m_data, str.m_data);
+	return *this;
+}
+
+4.type traits: construtor等是不是trivial，如果是的话就运行了，这东西就是询问class性质的
+is_void/has_virtual_destructor/is_copy_constructible/__has_trivial_consturctor...
+pod:plain old data，指的是c语言中旧的数据类型，没有函数，只有数据
+一个类只有自己有被当做base class的时候，才会需要写virtual destructor，另外，一个类
+有指针的话，一定要写析构函数，因为有可能浅delete
+string(const string&) = delete;		//把默认的copy construtor给删掉
+string(string&&) = default;			//我要默认的move constructor
+type traits的实现就是巧用泛化和特化类模板来实现的
+template<typename>										//泛化版本	
+	struct __is_void_helper : public false_type{};
+templat<>												//特化版本
+	struct __is_void_helper<void> : public true_type{};
+template<typename _Tp>
+	struct is_void
+	: public __is_void_helper<typename remve_cv<_Tp>::type>::type{};
+
+5.lambdas: 就是一个function object，没啥特别的
+
+6.emplace_back vs push_back
+push_back会先搞一个临时对象，再copy进去；emplace_back是直接调用相应的构造函数加在container后面
+7.noexcept: 一般class的析构函数是noexcept的
+a.可以是函数修饰符	void funcs() noexcept;该函数直接terminate，不抛异常
+b.可以是运算符		noexcept(myclass());  检测该类会不会抛出异常
+8.unique_ptr vs shared_ptr
+unique_ptr的pointer不可复制，是唯一的；但shared_ptr的pointer就可以被复制
+
+Effective c++
+1.尽量用const和inline，而不用#define，也就是尽量用编译器而不用预处理
+#define ASPECT_RATIO 1.653
+这种语句如果不是自己定义的头文件，因为是预处理，所以"ASPECT_RATIO"在编译器符号表中是不存在的
+代替为: const double ASPECT_RATIO = 1.653;
+#define max(a,b) ((a) > (b) ? (a) : (b))
+用模板函数代替就好了
+template<class T>
+inline const T& max(const T& a, const T& b)
+{ return a > b ? a : b; }
+2.尽量用<iostream>而不用<stdio.h>
+stdio.h类型不安全，因为有可能会在运行时报错，而写程序的一个大原则就是，尽量让错误出现在编译时
+iostream的“<<”和“>>”还可以重载，写自己类型的iostream
+
+多线程
+std::condition_variable cv;
+thread1:
+...
+cv.notify_one();
+thread2:
+std::unique_lock<std::mutex> ul(m);
+cv.wait(ul, []{return (??) ? true : false; });
+等到另一个线程notify，但还是得判断条件，如果条件不满足，继续等另一个线程notify
+
+操作系统
+操作系统顶会：SOSP, USENIX，没事可以看看这些期刊和会议的论文
+内存管理单元：MMU，把逻辑地址映射到物理地址；MMU找不到，就去主存里去找。
+物理地址空间：硬件管理的
+逻辑地址空间：一维统一的空间
+内碎片：已经给program了，但是program用不了
+外碎片：各个program之间分配的内存
+连续内存3个管理方法：
+1.最近碰到的内存块就分给需求，会出现外部碎片；
+2.块大小最合适的分给需求，会有很多非常细小的外部碎片产生；
+3.和1相反，这些方法有时候会出现不断的整合管理，消除碎片
+分段：把逻辑地址(把程序分块)分段的映射到物理地址上，有利于内存管理和使用【此种方法用的比较少】
+分页：和分段的唯一区别就是，页大小是固定大小：512,4096,8192等。分段和分页都有助于减少碎片
+物理内存：frame(帧)，逻辑地址空间：page(页)，frame和page固定大小一般一样的，通过page table寻址(操作系统建立的)
+TLB(Translation Look-aside Buffer)：页表的缓存，解决页表访问时间问题
+多级页表：解决页表空间占用问题，省空间
+反向页表：从物理地址指向逻辑地址，基于hash table的反向页表，好处就是大小和物理内存有关，可以做的很小
+hash table容易出现多对一的情况，需要有解决冲突的方法
+4.覆盖技术：程序员自己把程序分段，共用一段物理内存空间
+交换技术：OS自己决定把程序在内存和硬盘之间进行操作，一整个程序进行swap out和swap in的操作
+虚拟内存技术：按照类似页表的方法对内存和硬盘空间进行swap out和swap in的操作。有两个关键技术
+a.缺页中断：当页表中没对应的物理内存时，表示要从硬盘中copy，修改驻留位
+b.页面置换：当要copy时，发现物理内存没空间，要进行置换
+驻留位：1表示该页在内存里，0相反；
+保护位：只读,可读写,可执行标志位；
+修改位：标志该页在内存中是否被修改过
+访问位：如果该页经常被访问，就是1，用于后面的置换算法
+最有置换算法：把后面最长时间不会访问的页面给替换掉，只是个理想情况
+First-in First-out, FIFO先进先出算法：选择在内存中驻留时间最长的页面给替换掉，有个belady现象
+最新最久未使用算法(least recently used, LRU):把最久未使用的内存块的数据给替换掉，基于局部连续性原理
+LRU实现：
+a.用链表实现，最久未使用的放在头部；
+b.用堆栈实现，来了一个页号，在堆栈中一个个对比，如果缺页，就把栈底的页面给淘汰掉，开销比较大
+近似LRU的算法：Clock页面置换算法
