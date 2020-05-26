@@ -516,3 +516,70 @@ s: service time，原始的算法不支持抢占，我们可以设计抢占
 多CPU：一个是负载均衡
 优先级反转：T1>T2>T3;假设此时T3在访问共享资源，T1要运行就必须等待；T2这时好了抢占了T3的CPU，就会出现T2比T1先运行
 的情况，这就是优先级反转。一般会设计优先级继承方法来避免这种情况，就是T1要访问共享资源了，那T3跟着升级优先级
+同步：
+race condition(多进程访问冲突)
+critical section(临界区)：访问共享资源的那段代码
+mutual exclusion(互斥)：只有一个进程会处于临界区并访问共享资源
+dead lock(死锁)：两个进程相互等待完成特定任务
+starvation(饥饿)：一个进程被持续忽略
+race condition：用flag是不能解决的，因为一个flag判断又不会改变flag的值，而出现了进程切换
+临界区特点：1.互斥；2.progress，如果一个线程想进入临界区，一定能进；3.有限等待，等一会就可以；4.等的时候不占用CPU
+屏蔽硬件中断的方法：进入临界区禁用中断，离开临界区启用中断。这是整个的屏蔽中断，整个系统都停下来，其他处于starvation，
+多核系统中，一个CPU只能屏蔽自己的中断，其他核它管不了
+基于软件的解决方法：
+1.每个thread编号，有个while(turn==threadId)才能进入critical-section，并把turn变成其他threadId，这种会导致，比如
+只剩一个thread要持续执行critical section的代码时，条件一直不满足的情况
+2.int turn;						//把turn和flag都用上
+boolean flag[];					//临界区3个特点都能满足
+do{								//
+	flag[i]=TRUE;
+	turn = j;
+	while(flag[j] && turn == j);
+		critical section
+	flag[i] = FALSE;
+		remainder section
+} while(TRUE);
+Eisenbery and McGuire's Algorithm是多个进程之间软件保持互斥的算法
+Bakery算法：用排到的号码和线程本身ID号排列，两个综合考虑，谁小就让谁进入临界区
+软件解决办法比较浪费CPU，但硬件要求低，只需要load和store操作是atomic-operation就可以了
+基于硬件支持的操作：虽然多个操作，但是是连续执行的
+Test-and-Set：硬件完成3个操作-->从内存中读取值；测试值是否为1，返回true或false；把内存值设为1
+boolean TestAndSet(boolean *target){
+	boolean rv = *target;
+	*target = TRUE;
+	return rv;
+}
+exchange：交换内存中的值
+void Exchange(boolean *a, boolean *b){
+	boolean temp = *a;
+	*a = *b;
+	*b = temp;
+}
+忙等：									无忙等待：
+class Lock{								class Lock{
+	value = 0; 								int vlue = 0;
+}											WaitQueue q;
+Lock::Acquire(){						}
+	while(test-and-set(value))
+	;//spin								Lock::Acquire(){
+}											while(test-and-set(value)){
+												add this TCB to wait queue q;
+Lock::Release(){								schedule();
+	value = 0;								}
+}										}
+										Lock::Release(){
+											value = 0;
+											remove one thread t from q;
+											wakeup(t);
+										}
+临界区短就忙等；临界区长就无忙等待
+int lock = 0;
+++++++thread Ti++++++
+int key;
+do{
+	key = 1;
+	while(key == 1) exchange(lock, key);
+		critical section;
+	lock = 0;
+		remainder section;
+}
