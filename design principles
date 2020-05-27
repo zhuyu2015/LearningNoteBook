@@ -583,3 +583,105 @@ do{
 	lock = 0;
 		remainder section;
 }
+信号量：1.是整数；2.被保护的，只能通过pv操作，操作是原子操作；3.p可以阻塞，v则不能阻塞
+p():sem减1，after, 如果sem<0，等待，否则继续	；p是减少的意思
+v():sem加1，after, 如果sem<=0，唤醒一个等待的p；v是荷兰语，增加的意思
+生产者消费者问题
+Class BoundedBuffer{
+	mutex = new Semaphore(1);
+	fullBuffers = new Semaphore(0);
+	emptyBuffers = new Semaphore(n);
+}
+BoundedBuffer::Deposit(c){				BoundedBuffer::Remove(c){
+	emptyBuffers->P();						fullBuffers->P();
+	mutex->P();								mutex->P();
+	Add c to the buffer;					Remove c from buffer;
+	mutex->V();								mutex->V();
+	fullBuffers->V();						emptyBuffers->V();
+}										}
+mutex是互斥操作；如果把Deposit里的emptyBuffers->P()和mutex->P()调换，可能出现死锁现象
+信号量实现：
+class Semaphore{
+	int sem;
+	WaitQueue q;
+}
+Semaphore::P(){							Semaphore::V(){
+	sem--;									sem++;
+	if(sem < 0){							if(sem <= 0){
+		Add this thread t to q;					Remove a thread t from q;
+		block(p);								wakeup(t);
+	}										}
+}										}
+管程(monitor)：有一个锁；0或多个条件变量
+lock：Acquire-->等待直到锁可用，然后抢占锁；Release-->释放锁，如果有的话唤醒等待者
+condition variable：
+wait()：检查条件变量，不满足就睡觉，然后释放锁；signal()：条件满足了就唤醒等待者
+class Condition{
+	int numWaiting = 0;
+	WaitQueue q;
+}
+Condition::Wait(lock){					Condition::Signal(){
+	numWaiting++;							if(numWaiting>0){
+	Add this thread t to q;						Remove a thread t from q;
+	release(lock);								wakeup(t);	//wake one thread, need mutex
+	schedule();	//sleep, need mutex 			numWaiting--;
+	require(lock);							}
+}										}
+同样的生产者消费者问题用管程来实现
+class BoundedBuffer{
+	...
+	Lock lock;
+	int count = 0;
+	Condition notFull, notEmpty;
+}
+BoundedBuffer::Deposit(c){				BoundedBuffer::Remove(c){
+	lock->Acquire();						lock->Acquire();
+	while(count==n)							while(count==0)
+		notFull.Wait(&lock);					notEmpty.Wait(&lock);
+	Add c to the buffer;					Remove c from buffer;
+	count++;								count--;
+	notEmpty.Signal();						notFull.Signal();
+	lock->Release();						lock->Release();
+}										}
+Signal()和lock->Release()有先有后
+Hoare-style:signal之后直接让别的wait线程运行，等人家运行完自己再release，Deposit里的
+while(count==n)	notFull.Wait(&lock);-->if(count==n) notFull.Wait(&lock);
+Hansen-stype:自己signal并release之后再让别的wait线程运行
+基于管程实现的一个写者优先的例子
+AR = 0;			//of active readers			Public Database::Read(){
+AW = 0;			//of active writers				//wait unitl no writers;
+WR = 0;			//of waiting readers			StartRead();
+WW = 0;			//of waiting writers			read database;
+Condition okToRead;								//check out - wake up
+Condition okToWrite;						waiting writers;
+Lock lock;										DoneRead();
+											}
+Private Database::StartRead(){				Private Database::DoneRead(){
+	lock.Acquire();								lock.Acquire();
+	while((AW+WW)>0){								AR--;
+		WR++;										if(AR==0 && WW>0){
+		okToRead.wait(&lock);							okToWrite.signal();
+		WR--;										}
+	}											lock.Release();
+	AR++;									}
+	lock.Release();
+}
+					Public Database::Write(){
+						//wait until no readers/writers
+						StartWrite();
+						write database;
+						//check out - wake up waiting
+					readers/writers;
+						DoneWrite();
+					}
+Private Database::StartWrite(){				Private Database::DoneWrite(){
+	lock.Acquire();								lock.Acquire();
+		while((AW+AR)>0){							AW--;
+			WW++;									if(WW>0){
+			okToWrite.wait(&lock);						okToWrite.signal();
+			WW--;									}
+		}											else if(WR>0){
+		AW++;											okToRead.broadcast();
+	lock.Release();									}
+}												lock.Release();
+											}
