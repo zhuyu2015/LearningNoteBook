@@ -699,3 +699,69 @@ Private Database::StartWrite(){				Private Database::DoneWrite(){
 进程通讯方式：signal，pipe(一个程序的输出(一般是内存)重定向成另一个程序的输入，有个父进程进行管理这些子进程)，
 message queue(平行的不需要父进程进行管理，也有一块中间内存)，shared memory，socket(网络里用的)
 硬盘管理：分配算法和内存分配算法比较像，也有多级列表；RIAD容错和并行操作；磁盘读取也有一些FIFO，scan等方法
+
+实验：
+understand是比较好的看源码的工具，可以可视化工程源码
+80386四种运行模式：实模式：可访问的物理内存空间不超过1MB
+
+vscode && cmake && vcpkg && clang-format
+1.clang-format装个llvm就可以运行生成.clang-format文件，
+在c/c++插件中设置clang-format.exe路径，以及clang_format_fallbackStyle的类型
+2.cmake在找vcpkg时，需要把compiler和vcpkg的triplet对上(x64-windows/win32...)
+3.VCPKG_ROOT的值是在setting.json中设置的，cmake.configureEnvironment
+4.cmake编译器选项应该是可以小心设置的
+
+
+深入理解计算机体系结构：
+应该尽量避免数据溢出，要进行边界检查
+logical right shift:10100010>>2--->00101000
+arithmetic right shift:10100010>>2---->11101000
+complement numbers: All will be clear that the highest position will be negtive!!!
+5 	4 3 2 1
+-16 8 4 2 1
+usighed numbers: the highest position will be positive
+5  4 3 2 1
+16 8 4 2 1
+So, we must point out the type of number in c/c++
+signed values will implicitly cast to unsigned:
+if(-1>0u) cout<<"-1>0u"<<endl;									//it will cout the message
+int xx=-2;unsigned int yy=3;if(xx>yy)cout<<"-2>3"<<endl;		//will also cout the message
+short xx=-2;unsigned short yy=3;if(xx>yy)cout<<"-2>3"<<endl;	//won't cout the message, char either,
+// don't know the reason!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Tmax, Tmin=-Tmax-1;	10000-->-16; 01111-->15; positive numbers from '0', negtive numbers from '-1'
+Umax = Tmax<<1 + 1; so, numbers of Umax = 2 * Tmax + 1;
+singed number expand(eg. 8bit-->16bit):just expand the signed value to all expanded position
+10001001-->1111111110001001										//The value will be same!
+unsigned addition: if overfolw happens, just ignore the overflowed bit
+the value: = (u+v) % pow(2, 16+1)
+signed addition:just ignore the sign bit
+eg:		1101	-3			1011	-5	(complement model)
+	+	0101	5		+	0011	3
+		0011	2			1100	-2	(complement model)
+two negtive numbers/two positive numbers could occur overflowing, when the sign bit exchanged.
+unsigned multiplication will be the similar:u(w bits) * v(w bits)-->result(2w bits), 
+just ignore the higher position.
+signed multiplication:the higher w bits will be ignored, and the sign bit in lower w bits works
+shift always be arithmetic shift(in c/c++ language).
+in Java:'>>>' means logical right shift, '>>'means arithmetic right shift
+right shift for signed numbers: 1001>>2(-7)---->1110(-2)
+x-->-x: filp all the bits then plus one:
+		1101	-3	same to positive number
+flip 	0010	2 	same to positive number
+plus	0001	1 	same to positive number
+result 	0011	3 	same to positive number
+safe operation when using unsigned int for iterations
+for (size_t i = cnt - 2; i < cnt; i--){}
+this will be ok, even if cnt is signed and <0, causing signed number always be converted to unsigned first
+because unsigned numbers is simple, please always use unsigned numbers is possible.
+64-bits machine always has 47-bits for number representation
+"word size": nominal size of integer-valued data, recently, most machines used 32-bits(4 bytes) as word size
+in x64, pointer size is 8 bytes, in x86-win32, pointer size is 4 bytes
+Big Endian: Sun, PPC Mac, Internet-->least significant byte has highest(small) address
+Little Endian: x86, ARM precessors running Android, IOS, and Windows-->invert order w.r.t. Big Endian
+0x01234567
+Big 	Endian: 0x100	0x101	0x102 	0x103
+				01		23		45		67
+Little 	Endian: 67		45		23		01
+int x = INT_MIN;	//1000 0000 0000 0000
+x *= 2;				//0000 0000 0000 0000	interesting
