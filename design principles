@@ -765,3 +765,13 @@ Big 	Endian: 0x100	0x101	0x102 	0x103
 Little 	Endian: 67		45		23		01
 int x = INT_MIN;	//1000 0000 0000 0000
 x *= 2;				//0000 0000 0000 0000	interesting
+float number: In IEEE standard, the distrubution of numbers will be much denser toward zero
+v = (-1)^s M 2^E;	E = exp-Bias; and exp!=00000000 && exp!=11111111; Bias = 2^(k-1) - 1;
+when exp==00000000-->E=1-Bias, means number<1.0
+when exp==11111111&&frac==000...-->infinity number; if frac!=000...-->not a number(NaN)
+eg:0xC0A00000
+1 1000 0001 010 0000 0000 0000 0000 0000
+E = exp-Bias = 129 - 127 = 2;
+s = 1-->negative number
+M = 1.010... = 1 + 1/4 = 1.25;
+v = (-1)^s M 2^E = -5;
