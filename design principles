@@ -775,3 +775,50 @@ E = exp-Bias = 129 - 127 = 2;
 s = 1-->negative number
 M = 1.010... = 1 + 1/4 = 1.25;
 v = (-1)^s M 2^E = -5;
+Machine level programming:
+%rax-->64 bits registers	%eax-->32 bits registers(just the lower positions of %rax)
+actually, 64 bits<--32 bits<--16 bits<--8 bits
+%rax <-- %eax <-- %ax <-- (%ah 	%al)	accumulate
+%rcx <-- %ecx <-- %cx <-- (%ch 	%cl)	counter
+%rdx <-- %edx <-- %dx <-- (%dh 	%dl)	data
+%rbx <-- %ebx <-- %bx <-- (%bh 	%bl)	base
+%rsi <-- %esi <-- %si 					source index(pointer)
+%rdi <-- %edi <-- %di 					destination index(pointer)
+%rsp <-- %esp <-- %sp 					stack pointer
+%rbp <-- %ebp <-- %bp 					base pointer
+also %rip 	location of current code control point
+also has another 8 registers:%r8-15	%r8-15d %r8-15w %r8-15b
+when moving data, it can move between r&r m&r, but cannot m&m
+movq $0x4,  %rax 	temp = 0x4;
+movq $-147, (%rax)	*p = -147;
+movq %rax, %rdx 	tmp1=tmp2;
+movq %rax, (%rdx)	*p = tmp;
+movq (%rax), %rdx	tmp = *p;
+note:movq 10(%rax), %rdx	means, take mem[10] to %rdx, the number is offset
+most general memory addressing mode:Mem[reg[rb]+s*reg[ri]+d],s is 1,2,4,8, d is offset
+sarq src,dest 	dest>>src 	arithmetic right shift
+shrq src,dest 	dest>>src 	logical right shift
+condition codes:
+single bit registers:
+CF carry flag(for unsigned) if carry out from most significant bit(unsigned overflow)
+ZF zero flag if t==0
+SF sign flag(for singned) if t<0(as signed)
+OF overflow flag(for signed) if two's-complement(signed) overflow
+do{}while()		while()do{}		for(){}	 	three loop expression
+stack: "bottom" in the higher address, and "top" to lower address, %rsp contains the lowest stack address
+pushq src: %rsp decrese-->write value 		popq dest: read value-->increase %rsp
+when call child function, %rsp store the next step pointer, and when child returns, the %rsp will pop out
+first 6 arguments will be transfer to:%rdi,%rsi,%rdx,%rcx,%r8,%r9, return value at %rax, arguments after the
+first 6 will be stored into stack from top to down. You know, values in registers could be accessed more 
+quickly. from frame pointer:%rbp(optional, when we know the memory size child frame use, %rbp won't be needed) to
+stack pointer:%rsp, it called a stack frame, is some system, it may limit the stack's depth
+local valuables will stored in registers, but when you want to get the pointer of it, must store it
+into memory first
+"caller saved":before calling child, it saved it's tempory valuables into it's stack
+"callee saved":before excuting, save temporary values in its frame, when returns, restoring the values
+%r10, %r11 for caller-saved temporaries
+%rbx, %r12, %r13, %r14, %rbp(some times) for callee-saved temporaries
+%rbp and %rsp for special usage
+for example:when calling a child function, it will stack %rbx, and when return, it will pop the stored 
+%rbx value from stack memory to %rbx again
+the right shift will be logical shift, when the integer is unsigned
