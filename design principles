@@ -822,3 +822,28 @@ into memory first
 for example:when calling a child function, it will stack %rbx, and when return, it will pop the stored 
 %rbx value from stack memory to %rbx again
 the right shift will be logical shift, when the integer is unsigned
+put large data types first:maybe saving space in alignment memory
+for 2D arrays, it will be much slower, because the pointer also loaded from memory
+always use 2^n numbers, because in machine programming level, it will use shift actually
+SSE3:-->AVX-->AVX-512(bits)
+XMM registers: there are 16 these registers, and each has 16 bytes size
+addss %xmm0, %xmm1	one data single precision addition
+addps %xmm0, %xmm1	SIMD operations:single code for multiple data, 4 float data concurrency
+stack start address from 0000 7FFF FFFF FFFF to lower address, that is 2^47 bits size
+normally, linux machine has 8MB limit for each stack, if overflow, it will emerge a segmentation fault
+(0000 7FFF FFFF FFFF)stack-->...shared libraries-->...-->heap(malloc allocated data)
+-->bss(uninitialized or 0 data)-->data(initialized global or static data)-->text(excutable program)
+buffer overflow:access memory that is not allocated in a struct
+gets(), puts(), strcat(), printf(), scanf()...maybe unsafe, causing segment fault or
+some unpredictable behavior
+injection attack:gets() has buffer normally, input string contains executable code, let the program
+jump to exploit code:the first "injection attack" is "Morris worm" attack in 1988
+techniques to avoid these things:
+1.replace gets(),puts(),strcat()...;
+2.randomize stack address, so attacker don't know where the start possition is(but global and code
+position are always static)
+3.import executable flag for stack, so cannot inject code in stack
+4.use a stack "canary" to detect buffer overflow(cannot be attacked most time)
+ROP attack:gadget1-->gadget2-->gedget3... search for all little pieces of code(even in 0101010
+programming level, 0101010 machine codes can be disassembled into many versions of assemble codes),
+and fill some buffer(like gets(), or some others) with gadget1's address, oh, crash
