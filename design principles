@@ -847,3 +847,23 @@ position are always static)
 ROP attack:gadget1-->gadget2-->gedget3... search for all little pieces of code(even in 0101010
 programming level, 0101010 machine codes can be disassembled into many versions of assemble codes),
 and fill some buffer(like gets(), or some others) with gadget1's address, oh, crash
+programming optimization:
+1.decrease multiply operations, translate it to be addition as possible
+2.if the memory has posibilities to be modified, the compiler won't optimize the code
+e.g. a.don't launch func in loop; b.don't read&write memory in loop
+memory refrencing aliasing:>=2 names for same memory locations
+superscalar processor:can take advantage of the instruction level parallelism
+pipelined functional units:devide multiply into 3(e.g.) small stages, 3 stages can always run same time
+2 load/1 store/4 integer/2FP multiply/1FP add/1FP divide can executed in parallel
+instructions consuming time:
+instruction 				latency 		cycles/issue
+load/store 					4				1
+integer/multiply 			3 				1
+integer/long divide 		3-30			3-30
+single/double FP multiply 	5				1
+single/double FP add 		3 				1
+single/double FP divide 	3-15 			3-15
+divide is very expensive
+x += (x * d[i]) * d[i+1] is much slower than "x += x * (d[i] * d[i+1])"
+because d[i]*d[i+1] will be loaded at the same time?
+AVX512 also be used for program parallelization
