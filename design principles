@@ -867,3 +867,52 @@ divide is very expensive
 x += (x * d[i]) * d[i+1] is much slower than "x += x * (d[i] * d[i+1])"
 because d[i]*d[i+1] will be loaded at the same time?
 AVX512 also be used for program parallelization
+Memory Hierachy:
+volatile memories:SRAM & DRAM
+SRAM:static random-access memories, 4-6 trans. per bit, 10X faster than DRAM, name cache mem.
+DRAM:dynamic random-access memories, 1 trans. per bit, name as main memories, or frame buffers in GPU
+nonvolatile memories:ROM, PROM, EPROM, EEPROM, flash memory
+ROM:programmed during production;PROM:can be prog. once;EPROM:can be bulk erased(UV,X-Ray)
+EEPROM:electronic erase capability;flash memory:EEPROMs, wears out after about 100,000 erasings
+SSD:solid state disks, are flash memories actually, replace rotating disks usually
+register files<========>ALU
+^^
+||
+||
+vv				system				memory
+bus interface<=========>I/O bridge<========>main memory
+				bus 		^^		bus
+							||
+							||
+							vv
+--------------------------I/O bus-------------------------
+|					|				|			
+v 					v 				v
+USB 				Graphics 		disk
+controllers 		adapter 		controller
+old bus is PCI, which is broadcast bus, change the value, all devices will get the changed value
+new bus is PCI Express, which has the ability of point-to-point transfer ability
+
+so, register<-->ALU(1 nanosecond) maybe 100 times faster than main-memory<-->ALU(50-100 nanosecond)
+disks consist of platters, each with 2 surfaces<--concentric rings called tracks<--sectors&gaps
+old:sectors number is consistent between tracks, so the gaps growing bigger and bigger in-->out
+new:tracks number changes from in-->out
+platters rotate at constaint speed(7200r/s), scanning arm moving from inner circle-->out circles
+every gaps between platters, there is a arm
+seek time:arm move time(average 9ms)
+Tavg rotation time:platters rotation time from data-->data(average 4ms)
+Tavg transfer time:the arm read data from location(average 0.02ms)
+SRAM(4 ns)<--DRAM(60 ns)<--Disk(40,000 ns), disk is 2,500 times slower than DRAM
+when reading data from disk, CPU transfer "commond+logical address+memory address", then disk get
+the controlling of bus, and CPU do nothing for that thing, when data is transfered from disk to
+memory, then disk give CPU an intereption to mension that reads data from memory
+SSD:contains Blocks<--contains pages, when write to pages, you must erase the entire Block, then writing
+typically, when 100,000 times erased, the SSD will slow, many algorithm to improve the performence
+At 2003, causing the power comsuming, that's the bottleneck, so multi-cores CPU appears
+Principle of Locality: Programs tend to use data and instructions with addresses near or equal to those
+they have used recently.
+Temporal locality: Recently referenced items are likely to be references again in the near future
+Spatial locality:items with nearby addresses tend to be referenced close together in time
+L0(registers)<--L1(L1 cache:SRAM)<--L2(L2 cache:SRAM)<--L3(L3 cache:SRAM)<--L4(main memory(DRAM))
+<--L5(Local secondary storage:local disks)<--L6(Remote secondary storage:e.g., Web servers)
+<---------Samller,faster,costlier					larger,slower,cheaper--------->
