@@ -933,3 +933,15 @@ sets										tag for match lines in a set
 If there are some empty block, when missing, It will fill the empty block first
 write through:write data directly to memory
 write back:write data into cache first, until to be replaced at the last minites
+because main memory accessing costs much more time, hit-rate=99% could save time 2 times than
+hite-rate=97%
+writing cache friendly code:
+1.make the common case go fast:focus on the inner loops of the core functions
+2.minimize the misses in the inner loops:local variables are good;stride-1 reference are good
+small stride and small data size will bring more powerful read throughput
+smale data size related to cache size: 
+e.g. Corei7 Haswell, 2.1Hz, 32KB L1 d-cache, 256KB L2 cache, 8MB L3 cache, 64 B block size
+specially, when loading stride=1, L2&L3 almost the same reading speed, maybe L2 pre-read
+some data from L3
+write can be more flexable, causing the latency writ-back operation
+blocking multiplication for matrix multiplication will help a lot
