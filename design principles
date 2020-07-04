@@ -878,6 +878,7 @@ SSD:solid state disks, are flash memories actually, replace rotating disks usual
 register files<========>ALU
 ^^
 ||
+Cache memory(managed by hardware), actually cache memory between registers & main memory
 ||
 vv				system				memory
 bus interface<=========>I/O bridge<========>main memory
@@ -916,3 +917,19 @@ Spatial locality:items with nearby addresses tend to be referenced close togethe
 L0(registers)<--L1(L1 cache:SRAM)<--L2(L2 cache:SRAM)<--L3(L3 cache:SRAM)<--L4(main memory(DRAM))
 <--L5(Local secondary storage:local disks)<--L6(Remote secondary storage:e.g., Web servers)
 <---------Samller,faster,costlier					larger,slower,cheaper--------->
+cache memory read:different from main memory
+	E = 2^e lines per set
+S	------	------	------ ... ------		when CPU send a Address of word to cache
+=	|....|	|....|	|....| ... |....|		t bits 	s bits 		b bits
+2^s	------	------	------ ... ------		tag 	set idx 	block offset
+sets										tag for match lines in a set	
+	------	------	------ ... ------		set index if simple, block also simple
+	|....|	|....|	|....| ... |....|						-----------------
+	------	------	------ ... ------ 	line looks like:	|v tag 01234...7|
+															-----------------
+	------	------	------ ... ------		v is valid bit
+	|....|	|....|	|....| ... |....|		set idx to locate set, then check tag and v, if not
+	------	------	------ ... ------		match and not valid, load data from main memory
+If there are some empty block, when missing, It will fill the empty block first
+write through:write data directly to memory
+write back:write data into cache first, until to be replaced at the last minites
