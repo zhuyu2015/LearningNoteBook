@@ -945,3 +945,80 @@ specially, when loading stride=1, L2&L3 almost the same reading speed, maybe L2 
 some data from L3
 write can be more flexable, causing the latency writ-back operation
 blocking multiplication for matrix multiplication will help a lot
+Linking
+What do linkers do?
+1.symbol resolution:
+programs define and reference symbols(global variables and functions)
+symbol definitions are stored in object file(by assembler) in symbol table:symbol table is an array
+of structs, each entry includes name, size and location of symbol. During symbol resolution step, the
+linker associates each symbol reference with exactly one symbol definition.
+2.relocation:merges separte code and data sections into single sections. Relocates symblos from their
+relative locations in the .o files to their final absolute memory locations in the executable. And 
+propergate the new address to all references of this symbol.
+.o files should be relocated to absolute memory locations by linker into finally executable file
+three kinds of object files:relocatable object file, executable object file, shared object file
+all these are Executable and Linkable Format(ELF)
+when define a global variable or function with static attribute, the var is privated by that module, 
+and this var called local symbol, not the local variables, which are managed by stack
+ELF object file format
+ELF header						word size,byte ordering,file type,machine type
+segment header table 			page size,virtual addresses memory segments,segment sizes
+.text section 					code
+.rodata section 				read only data:jump tables
+.data section 					initialized global variables
+.bss section 					uninitialized global variables,"block started by symbol"
+.symtab section 				symbol table,procedure and static variable names,section names and locations
+.rel.txt section 				relocation info for .text section,addresses for instructions that will
+								need to be modified in the executable
+.rel.data section  				relocation info for .data section.And some like .rel.txt section
+.debug section 					info for symbolic debugging
+section header table 			offsets and sizes of each section
+strong symbol:symbol with initialized value
+weak symbol:symbol without initialized value
+p1:					p2:
+int x = 7;			double x;
+int y = 5; 			p2()}{}
+p1(){}
+Linker will take x as the only symbol, and when modify x in p2(), the value of 'y' will be modified.
+Avoid Global variables ASAP. Otherwise,use static if you can, initialize the value,use extern
+Executable object file will like things following:
+Headers					|
+system code 			|	
+main() 					|these things are stored in .text segment
+some consumer funcs... 	|
+more system code 		|
+system data 		|
+user data 			|
+.symtab 			|these things are stored in .data segment
+.debug 				|
+Compiler compile the file in local address, when relocated, the local address need to be transfered
+to absolute address. When executable executes, it will load the main() entry, and compute all other
+address from offset of main() entry.
+00000000000000000000000<main>:
+0: 48 83 ec 08			sub	$0x8,%rsp
+4: be 02 00 00 00 		mov $0x2,%esi
+9: bf 00 00 00 00 		mov $0x0,%dei
+					a: R_X86_64_32 array 		#Relocation entry from compiler to Linker
+			................
+e: e8 00 00 00 00 		callq 13 <main+0x13> #sum()
+					f: R_X86_64_PC32 sum-0x4 	#Relocation entry to sum()
+					_PC32 means the address is PC-relative addressing
+When the executable is relocated, the address of 'main() entry' and 'relocation entry' will be modified. 
+And the executable object file is created once, don't need to be modified more, it can be loaded onto
+memory directly. Loader will load the executable file, and excute from the 'main() entry'.
+all executables loaded, and their address begins at 0x400000 address?
+kernel virtual memory
+User stack(created at runtime) 	%rsp managed
+...
+memory-mapped region for shared libraries
+...
+run-time heap(created by malloc)			#actually, large heap may located at high address near stack
+read/write data segmen(.data,.bss)
+real-only code segment(.init,.text,.rodata)	#always started from 0x400000?
+in gcc, the linked library should be placed at the last positions after the -L operation
+shared libraries can loaded when executable is first loaded, and can also occur at run-time
+in dynamic linking:linker partially link *.so files, when Loader load the exe. dynamic linker will
+fully link executable in memory.
+Loader(execve) load executable files and call dynamic linker load *.so files
+linking can happen at 'compile time', 'load time'(like c standard libs) and 'run time'
+library interpositioning: that is trace the call times of one function
