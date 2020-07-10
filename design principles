@@ -1022,3 +1022,70 @@ fully link executable in memory.
 Loader(execve) load executable files and call dynamic linker load *.so files
 linking can happen at 'compile time', 'load time'(like c standard libs) and 'run time'
 library interpositioning: that is trace the call times of one function
+Exceptional control flow: exists at all levels of a computer system
+Low level mechanisms:
+1.Exceptions:
+Change in control of flow in response to a system event, implemented using combination of hardware
+and OS software
+Higher level mechanisms:
+2.precess context switch(OS&hardware timer);
+3.signals(OS);
+4.nonlocal jumps:setjmp() and longjmp() (C runtime library)
+The kernel is the part of OS that's always resident in memory
+Exceptions:divide by 0, arithmetic overflow, page fault, I/O request completes, typing Ctrl+C
+exception operation procedures:
+User code 							Kernel code
+				exception
+I_current 	------------------->	exception processing by exception hanlder(pointered by table)
+										||
+										vv
+									return to I_current/I_next, or Abort
+Asynchronous Exceptions(Interrupts)
+caused by events external to the processor:
+e.g. Timer interrupt:every few ms, an external timer chip triggers an interrupt, used by the
+kernel to take back control from user programs
+e.g. I/O interrupt from external device:Ctrl+C;Arrival data from network, disk
+Synchronous exceptions:
+Caused by events that occur as a result of executing an instruction:
+Traps:intentional
+system calls, breakpoint traps, special instructions
+Faults:unintentinal
+page faults(recoverable), protection faults(unrecoverable), floating point exceptions
+Aborts:unintentinala and unrecoverable
+illegal instruction, parity error, machine check
+common system calls:
+0-read();1-write();2-open();3-close();4-stat();57-fork();59-execve();60_exit();62-kill...
+process:A process is an instance of a running program
+Each process has its own address space and register
+context switching:copy address space&register to memory, and switch to another process
+void fork9(){
+	int child_status;
+
+	if(fork() == 0){
+		printf("HC: hello from child\n");
+		exit(0);
+	}else{
+		printf("HP: hello from parent\n");
+		wait(&child_status);
+		printf("CT: child has terminated\n");
+	}
+	printf("Byte\n");
+}
+fork()------->HP printf---------->wait()-------->CT Bye printf
+      |								^
+      |								|
+      v 							|		
+      ------->HC printf--------------
+child totally process copy parent process status and data. The only different is fork() return
+'0' in child process and return PID in parent process
+When parent process terminite, the child process may occur zambie process, don't worry, a process
+named init process would reap them.
+if((pid = Fork()) == 0) {
+	//we could do some additional operations, 
+	if(execve(myargv[0], myargv, environ) < 0) {
+		printf("%s: command not found.\n", myargv[0]);
+		exit(1);
+	}
+}
+execve(char *filename, char *argv[], char *envp[])
+launch a new process:e.g. "/bin/ls -lt /usr/include"
