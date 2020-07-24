@@ -1089,3 +1089,64 @@ if((pid = Fork()) == 0) {
 }
 execve(char *filename, char *argv[], char *envp[])
 launch a new process:e.g. "/bin/ls -lt /usr/include"
+Signals:
+Shell Programs:A shell is an application program that runs programs on behalf of the user.
+sh:original Unix shell; csh/tcsh:BSD Unix shell; bash: "bourne-again" Shell(default linux shell)
+void eval(char *cmdline){
+	char *argv[MAXARGS];	// Argument list execve()
+	char buf[MAXLINE]; 		// holds modified command line
+	int bg;					// should the job run in bg or fg
+	pid_t pid;				// process id
+
+	strcpy(buf, cmdline);
+	bg = parseline(buf, argv);
+	if(!builtin_command(argv)){
+		if((pid = Fork()) == 0){ /*child runs user job*/
+			if(execve(argv[0], argv, environ) < 0)
+				printf("%s: command not found.\n", argv[0]);
+				exit(0);
+			}
+		}
+
+	/*parent waits for foreground job to terminate*/
+	if(!bg){
+		int status;
+		if(waitpid(pid, &status, 0) < 0)
+			unix_error("waitfg: waitpid error");
+	}
+	else
+		printf("%d %s", pid, cmdline);
+	}
+	return;
+}
+A signal is a small message that notifies a process that an event of some type has occurred in
+the system
+ID 	Name 		default action 		corresponding event
+2 	SIGINT 		Terminate 			user typed ctrl+c
+9 	SIGKILL 	Terminate 			kill program(cannot override or ignore)
+11 	SIGSEGV 	Terminate 			segmentation violation
+14 	SIGALRM 	Terminate 			timer signal
+17 	SIGCHLD 	Ignore 				child stopped or terminated
+pending:represents the set of pending signals
+blocked:represents the set of blocked signals
+getpgrp():return process group of current processes
+setpgid():change process group of a process
+SIGTSTP(ctrl+z):default action is to stop(suspend) each process
+installing signal handlers:
+modifies the default action associated with the receipt of signal signum
+SIG_IGN:ignore signals of type signum
+SIG_DFL:revert to the default action on receipt of signals of type signum
+Handlers can be interrupted by other handlers
+signals are aren't cued
+Temporarily blocking signals
+sigset_t mask, prev_mask;
+Sigemptyset(&mask);
+Sigaddset(&mask, SIGINT);
+
+/* block SIGINT and save previous blocked set*/
+Sigprocmask(SIG_BLOCK, &mask, &prev_mask);
+...
+.../*code region that will not be interrupted by SIGINT*/
+...
+/*restore previous blocked set, unblocking SIGINT*/
+Sigprocmask(SIG_SETMASK, &prev_mask, NULL);
